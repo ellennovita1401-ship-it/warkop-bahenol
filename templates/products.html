@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Produk - {{ store_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0"><i class="bi bi-box-seam me-2"></i>Produk / Menu</h4>
+  {% if current_user.role == 'admin' %}
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal"><i class="bi bi-plus-lg me-1"></i>Tambah Produk</button>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>Kategori</th>
+          <th class="text-end">Harga Jual</th>
+          <th class="text-end">HPP</th>
+          <th class="text-end">Stok</th>
+          <th>Status</th>
+          {% if current_user.role == 'admin' %}<th></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td class="fw-medium">{{ p.name }}</td>
+          <td>{{ p.category_name or '-' }}</td>
+          <td class="text-end">Rp {{ "{:,.0f}".format(p.price) }}</td>
+          <td class="text-end">Rp {{ "{:,.0f}".format(p.cost) }}</td>
+          <td class="text-end">{{ p.stock|int }} {{ p.unit }}</td>
+          <td>{% if p.is_active %}<span class="badge bg-success">Aktif</span>{% else %}<span class="badge bg-secondary">Nonaktif</span>{% endif %}</td>
+          {% if current_user.role == 'admin' %}
+          <td>
+            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ p.id }}"><i class="bi bi-pencil"></i></button>
+          </td>
+          {% endif %}
+        </tr>
+        <!-- Edit Modal -->
+        {% if current_user.role == 'admin' %}
+        <div class="modal fade" id="editModal{{ p.id }}" tabindex="-1">
+          <div class="modal-dialog">
+            <form method="POST" action="{{ url_for('product_edit', pid=p.id) }}" class="modal-content">
+              <div class="modal-header"><h5 class="modal-title">Edit Produk</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">
+                <div class="mb-3"><label class="form-label">Nama</label><input type="text" name="name" class="form-control" value="{{ p.name }}" required></div>
+                <div class="mb-3"><label class="form-label">Kategori</label>
+                  <select name="category_id" class="form-select">
+                    <option value="">-</option>
+                    {% for c in categories %}<option value="{{ c.id }}" {% if p.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+                  </select>
+                </div>
+                <div class="row">
+                  <div class="col-6 mb-3"><label class="form-label">Harga Jual</label><input type="number" name="price" class="form-control" value="{{ p.price }}" required></div>
+                  <div class="col-6 mb-3"><label class="form-label">HPP / Modal</label><input type="number" name="cost" class="form-control" value="{{ p.cost }}"></div>
+                </div>
+                <div class="row">
+                  <div class="col-6 mb-3"><label class="form-label">Stok</label><input type="number" name="stock" class="form-control" value="{{ p.stock }}" step="0.01"></div>
+                  <div class="col-6 mb-3"><label class="form-label">Satuan</label><input type="text" name="unit" class="form-control" value="{{ p.unit }}"></div>
+                </div>
+                <div class="form-check"><input type="checkbox" name="is_active" class="form-check-input" id="act{{ p.id }}" {% if p.is_active %}checked{% endif %}><label class="form-check-label" for="act{{ p.id }}">Aktif</label></div>
+              </div>
+              <div class="modal-footer"><button type="submit" class="btn btn-primary">Simpan</button></div>
+            </form>
+          </div>
+        </div>
+        {% endif %}
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Belum ada produk</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if current_user.role == 'admin' %}
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="POST" action="{{ url_for('product_add') }}" class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Tambah Produk</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Nama</label><input type="text" name="name" class="form-control" required></div>
+        <div class="mb-3"><label class="form-label">Kategori</label>
+          <select name="category_id" class="form-select">
+            <option value="">-</option>
+            {% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="row">
+          <div class="col-6 mb-3"><label class="form-label">Harga Jual</label><input type="number" name="price" class="form-control" required></div>
+          <div class="col-6 mb-3"><label class="form-label">HPP / Modal</label><input type="number" name="cost" class="form-control" value="0"></div>
+        </div>
+        <div class="row">
+          <div class="col-6 mb-3"><label class="form-label">Stok Awal</label><input type="number" name="stock" class="form-control" value="0" step="0.01"></div>
+          <div class="col-6 mb-3"><label class="form-label">Satuan</label><input type="text" name="unit" class="form-control" value="pcs"></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button type="submit" class="btn btn-primary">Tambah</button></div>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Laporan - {{ store_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0"><i class="bi bi-graph-up me-2"></i>Laporan Laba Rugi & Analisis</h4>
+</div>
+<form class="row g-2 mb-4">
+  <div class="col-auto"><input type="date" name="from" class="form-control" value="{{ date_from }}"></div>
+  <div class="col-auto"><input type="date" name="to" class="form-control" value="{{ date_to }}"></div>
+  <div class="col-auto"><button class="btn btn-primary">Tampilkan</button></div>
+</form>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card"><div class="card-body">
+      <div class="text-muted small">Pendapatan</div>
+      <h4 class="text-primary mb-0">Rp {{ "{:,.0f}".format(sales.revenue) }}</h4>
+      <small>{{ sales.trx }} transaksi</small>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card"><div class="card-body">
+      <div class="text-muted small">HPP (COGS)</div>
+      <h4 class="text-warning mb-0">Rp {{ "{:,.0f}".format(cogs) }}</h4>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card"><div class="card-body">
+      <div class="text-muted small">Laba Kotor</div>
+      <h4 class="mb-0">Rp {{ "{:,.0f}".format(gross_profit) }}</h4>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card"><div class="card-body">
+      <div class="text-muted small">Laba Bersih</div>
+      <h4 class="{% if net_profit >= 0 %}text-success{% else %}text-danger{% endif %} mb-0">Rp {{ "{:,.0f}".format(net_profit) }}</h4>
+      <small>setelah pengeluaran Rp {{ "{:,.0f}".format(expenses) }}</small>
+    </div></div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold">Metode Pembayaran</div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead><tr><th>Metode</th><th class="text-end">Jumlah Trx</th><th class="text-end">Total</th></tr></thead>
+          <tbody>
+            {% for p in by_payment %}
+            <tr>
+              <td><span class="badge badge-{{ p.payment_method }}">{{ p.payment_method }}</span></td>
+              <td class="text-end">{{ p.cnt }}</td>
+              <td class="text-end">Rp {{ "{:,.0f}".format(p.total) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-center text-muted">Tidak ada data</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header bg-white fw-semibold">Penjualan Harian</div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead><tr><th>Tanggal</th><th class="text-end">Trx</th><th class="text-end">Total</th></tr></thead>
+          <tbody>
+            {% for d in daily %}
+            <tr>
+              <td>{{ d.tgl }}</td>
+              <td class="text-end">{{ d.trx }}</td>
+              <td class="text-end">Rp {{ "{:,.0f}".format(d.total) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-center text-muted">Tidak ada data</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header bg-white fw-semibold">Produk Terlaris</div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead><tr><th>Produk</th><th class="text-end">Qty</th><th class="text-end">Omzet</th><th class="text-end">Margin</th></tr></thead>
+          <tbody>
+            {% for t in top %}
+            <tr>
+              <td>{{ t.product_name }}</td>
+              <td class="text-end">{{ t.qty|int }}</td>
+              <td class="text-end">Rp {{ "{:,.0f}".format(t.revenue) }}</td>
+              <td class="text-end text-success">Rp {{ "{:,.0f}".format(t.revenue - t.cost) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center text-muted">Tidak ada data</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

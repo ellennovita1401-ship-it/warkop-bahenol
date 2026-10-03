@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Pengeluaran - {{ store_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0"><i class="bi bi-cash-stack me-2"></i>Pengeluaran</h4>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal"><i class="bi bi-plus-lg me-1"></i>Catat Pengeluaran</button>
+</div>
+<form class="row g-2 mb-3">
+  <div class="col-auto"><input type="date" name="from" class="form-control" value="{{ date_from }}"></div>
+  <div class="col-auto"><input type="date" name="to" class="form-control" value="{{ date_to }}"></div>
+  <div class="col-auto"><button class="btn btn-primary">Filter</button></div>
+</form>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th>Deskripsi</th>
+          <th>Kategori</th>
+          <th>Input Oleh</th>
+          <th class="text-end">Jumlah</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in expenses %}
+        <tr>
+          <td>{{ e.created_at[:16] if e.created_at else '' }}</td>
+          <td>{{ e.description }}</td>
+          <td>{{ e.category or '-' }}</td>
+          <td>{{ e.input_by or '-' }}</td>
+          <td class="text-end text-danger">Rp {{ "{:,.0f}".format(e.amount) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-muted py-4">Belum ada pengeluaran</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="POST" action="{{ url_for('expense_add') }}" class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Catat Pengeluaran</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Deskripsi</label><input type="text" name="description" class="form-control" required placeholder="Contoh: Beli susu, listrik, dll"></div>
+        <div class="mb-3"><label class="form-label">Jumlah (Rp)</label><input type="number" name="amount" class="form-control" required min="1"></div>
+        <div class="mb-3"><label class="form-label">Kategori</label>
+          <select name="category" class="form-select">
+            <option value="Bahan Baku">Bahan Baku</option>
+            <option value="Operasional">Operasional</option>
+            <option value="Gaji">Gaji</option>
+            <option value="Utilitas">Utilitas (Listrik/Air)</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer"><button type="submit" class="btn btn-primary">Simpan</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

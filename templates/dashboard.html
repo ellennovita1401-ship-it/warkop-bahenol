@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - {{ store_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h4>
+  <span class="text-muted">{{ today }}</span>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="text-muted small">Penjualan Hari Ini</div>
+        <h3 class="mb-0 text-primary">Rp {{ "{:,.0f}".format(sales.total_sales) }}</h3>
+        <small class="text-muted">{{ sales.trx_count }} transaksi</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="text-muted small">HPP (COGS)</div>
+        <h3 class="mb-0 text-warning">Rp {{ "{:,.0f}".format(cogs) }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="text-muted small">Pengeluaran</div>
+        <h3 class="mb-0 text-danger">Rp {{ "{:,.0f}".format(expenses) }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="text-muted small">Laba Bersih Hari Ini</div>
+        <h3 class="mb-0 {% if profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+          Rp {{ "{:,.0f}".format(profit) }}
+        </h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold">Penjualan 7 Hari Terakhir</div>
+      <div class="card-body">
+        <canvas id="salesChart" height="120"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header bg-white fw-semibold">Transaksi Terbaru</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Invoice</th>
+              <th>Waktu</th>
+              <th>Kasir</th>
+              <th>Metode</th>
+              <th class="text-end">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in recent %}
+            <tr>
+              <td><a href="{{ url_for('transaction_detail', tid=t.id) }}">{{ t.invoice_no }}</a></td>
+              <td>{{ t.created_at[11:16] if t.created_at else '' }}</td>
+              <td>{{ t.kasir or '-' }}</td>
+              <td><span class="badge badge-{{ t.payment_method }}">{{ t.payment_method }}</span></td>
+              <td class="text-end">Rp {{ "{:,.0f}".format(t.grand_total) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-4">Belum ada transaksi</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header bg-white fw-semibold">Produk Terlaris (7 Hari)</div>
+      <ul class="list-group list-group-flush">
+        {% for p in top_products %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-medium">{{ p.product_name }}</div>
+            <small class="text-muted">{{ p.qty|int }} terjual</small>
+          </div>
+          <span class="text-primary fw-semibold">Rp {{ "{:,.0f}".format(p.revenue) }}</span>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted text-center">Belum ada data</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="d-grid gap-2 mt-3">
+      <a href="{{ url_for('pos') }}" class="btn btn-primary btn-lg"><i class="bi bi-cart3 me-2"></i>Buka Kasir</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const chartData = {{ chart_data | map(attribute='tgl') | list | tojson }};
+const chartValues = {{ chart_data | map(attribute='total') | list | tojson }};
+const ctx = document.getElementById('salesChart');
+if (ctx) {
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: chartData,
+      datasets: [{
+        label: 'Penjualan',
+        data: chartValues,
+        backgroundColor: '#6f4e37',
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => 'Rp ' + v.toLocaleString('id') } }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

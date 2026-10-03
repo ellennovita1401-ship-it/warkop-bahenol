@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Pengaturan - {{ store_name }}{% endblock %}
+{% block content %}
+<div class="mb-4"><h4 class="mb-0"><i class="bi bi-gear me-2"></i>Pengaturan Toko</h4></div>
+<div class="card" style="max-width: 500px;">
+  <div class="card-body">
+    <form method="POST">
+      <div class="mb-3">
+        <label class="form-label">Nama Toko / Warkop</label>
+        <input type="text" name="store_name" class="form-control" value="{{ settings.store_name }}" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Alamat</label>
+        <textarea name="store_address" class="form-control" rows="2">{{ settings.store_address }}</textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">No. Telepon</label>
+        <input type="text" name="store_phone" class="form-control" value="{{ settings.store_phone }}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Pajak (%) </label>
+        <input type="number" name="tax_percent" class="form-control" value="{{ settings.tax_percent }}" step="0.1" min="0">
+        <small class="text-muted">Isi 0 jika tidak pakai pajak</small>
+      </div>
+      <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
